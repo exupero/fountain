@@ -5,33 +5,29 @@ import (
 )
 
 const (
-	TokenText lexer.TokenType = iota
-
-	TokenColon
+	TokenDataKey lexer.TokenType = iota
+	TokenDataValue
 )
 
-func lexText(lex *lexer.Lexer) lexer.StateFn {
+func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
 		if r == -1 {
 			break
 		}
+		if r == '\n' {
+			lex.Backup()
+			break
+		}
 	}
-	lex.Emit(TokenText)
-	return nil
-}
+	lex.Emit(TokenDataValue)
 
-func lexColon(lex *lexer.Lexer) lexer.StateFn {
-	lex.Accept(":")
-	lex.Emit(TokenColon)
-
-	lex.Accept(" ")
+	lex.Accept("\n")
 	lex.Ignore()
-
-	return lexText
+	return lexDataBlock
 }
 
-func lexData(lex *lexer.Lexer) lexer.StateFn {
+func lexDataKey(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
 		if r == -1 {
@@ -42,12 +38,26 @@ func lexData(lex *lexer.Lexer) lexer.StateFn {
 			break
 		}
 	}
-	lex.Emit(TokenText)
-	return lexColon
+	lex.Emit(TokenDataKey)
+
+	lex.AcceptRun(": ")
+	lex.Ignore()
+	return lexDataValue
+}
+
+func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
+	r := lex.Peek()
+	if r == -1 {
+		return nil
+	}
+	if r == '\n' {
+		return nil
+	}
+	return lexDataKey
 }
 
 func Tokenize(src string) *lexer.Lexer {
 	lex := lexer.NewLexer(src)
-	go lex.Run(lexData)
+	go lex.Run(lexDataBlock)
 	return lex
 }

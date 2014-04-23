@@ -7,9 +7,10 @@ import (
 )
 
 func TestData(t *testing.T) {
-	lexer.AssertStream(t, "Title: The One Day", Tokenize, func(s chan lexer.Token) {
-		s <- lexer.Token{TokenText, "Title"}
-		s <- lexer.Token{TokenColon, ":"}
-		s <- lexer.Token{TokenText, "The One Day"}
+	lexer.AssertStream(t, "Title: The One Day\nCredit: Written By", Tokenize, func(s chan lexer.Token) {
+		s <- lexer.Token{TokenDataKey, "Title"}
+		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenDataKey, "Credit"}
+		s <- lexer.Token{TokenDataValue, "Written By"}
 	})
 }
