@@ -7,6 +7,11 @@ import (
 const (
 	TokenDataKey lexer.TokenType = iota
 	TokenDataValue
+
+	TokenText
+	TokenTextBold
+	TokenTextItalic
+	TokenTextUnderline
 )
 
 func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
@@ -51,9 +56,103 @@ func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 		return nil
 	}
 	if r == '\n' {
-		return nil
+		lex.AcceptRun("\n")
+		lex.Ignore()
+		return lexText
 	}
 	return lexDataKey
+}
+
+func lexText(lex *lexer.Lexer) lexer.StateFn {
+	for {
+		r := lex.NextRune()
+		if r == -1 {
+			break
+		}
+		if r == '*' {
+			if lex.Peek() == '*' {
+				lex.Backup()
+				lex.Emit(TokenText)
+				return lexTextBold
+			} else {
+				lex.Backup()
+				lex.Emit(TokenText)
+				return lexTextItalic
+			}
+		}
+		if r == '_' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			return lexTextUnderline
+		}
+	}
+	lex.Emit(TokenText)
+	return nil
+}
+
+func lexTextBold(lex *lexer.Lexer) lexer.StateFn {
+	lex.Accept("*")
+	lex.Accept("*")
+	lex.Ignore()
+
+	for {
+		r := lex.NextRune()
+		if r == -1 {
+			break
+		}
+		if r == '*' && lex.Peek() == '*' {
+			lex.Backup()
+			break
+		}
+	}
+	lex.Emit(TokenTextBold)
+
+	lex.Accept("*")
+	lex.Accept("*")
+	lex.Ignore()
+	return lexText
+}
+
+func lexTextItalic(lex *lexer.Lexer) lexer.StateFn {
+	lex.Accept("*")
+	lex.Ignore()
+
+	for {
+		r := lex.NextRune()
+		if r == -1 {
+			break
+		}
+		if r == '*' {
+			lex.Backup()
+			break
+		}
+	}
+	lex.Emit(TokenTextItalic)
+
+	lex.Accept("*")
+	lex.Ignore()
+	return lexText
+}
+
+func lexTextUnderline(lex *lexer.Lexer) lexer.StateFn {
+	lex.Accept("_")
+	lex.Ignore()
+
+	for {
+		r := lex.NextRune()
+		if r == -1 {
+			break
+		}
+		if r == '_' {
+			lex.Backup()
+			break
+		}
+	}
+	lex.Emit(TokenTextUnderline)
+
+	lex.Accept("_")
+	lex.Ignore()
+	return lexText
 }
 
 func Tokenize(src string) *lexer.Lexer {
