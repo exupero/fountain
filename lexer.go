@@ -1,6 +1,8 @@
 package fountain
 
 import (
+	"strings"
+
 	"github.com/exupero/state-lexer"
 )
 
@@ -12,6 +14,8 @@ const (
 	TokenTextBold
 	TokenTextItalic
 	TokenTextUnderline
+
+	TokenSpeaker
 )
 
 func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
@@ -56,11 +60,36 @@ func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 		return nil
 	}
 	if r == '\n' {
-		lex.AcceptRun("\n")
+		lex.Accept("\n")
 		lex.Ignore()
-		return lexText
+		return lexBody
 	}
 	return lexDataKey
+}
+
+func lexBody(lex *lexer.Lexer) lexer.StateFn {
+	for {
+		r := lex.NextRune()
+		if r == -1 {
+			break
+		}
+		if strings.IndexRune("abcdefghijklmnopqrstuvwxyz*_", r) >= 0 {
+			lex.Backup()
+			return lexText
+		}
+		if strings.IndexRune("\n", r) >= 0 {
+			lex.Backup()
+			return lexSpeaker
+		}
+	}
+	return nil
+}
+
+func lexSpeaker(lex *lexer.Lexer) lexer.StateFn {
+	lex.Emit(TokenSpeaker)
+	lex.Accept("\n")
+	lex.Ignore()
+	return lexText
 }
 
 func lexText(lex *lexer.Lexer) lexer.StateFn {
