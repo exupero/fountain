@@ -111,7 +111,7 @@ func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
 
 		if r == lexer.Eof {
 			lex.Emit(TokenDialogue)
-			break
+			return nil
 		}
 		if r == '\n' {
 			lex.Backup()
@@ -125,6 +125,13 @@ func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
 	lex.Emit(TokenDialogue)
 	lex.Accept("\n")
 	lex.Ignore()
+
+	if lex.NextRune() == '\n' {
+		lex.Ignore()
+		return lexBody
+	}
+
+	lex.Backup()
 	return lexDialogue
 }
 
@@ -146,6 +153,7 @@ func lexText(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
 		if r == lexer.Eof {
+			lex.Emit(TokenText)
 			break
 		}
 		if r == '*' {
@@ -164,8 +172,15 @@ func lexText(lex *lexer.Lexer) lexer.StateFn {
 			lex.Emit(TokenText)
 			return lexTextUnderline
 		}
+		if r == '\n' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			lex.Accept("\n")
+			lex.Accept("\n")
+			lex.Ignore()
+			return lexBody
+		}
 	}
-	lex.Emit(TokenText)
 	return nil
 }
 

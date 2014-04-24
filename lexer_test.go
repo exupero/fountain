@@ -100,3 +100,31 @@ But I think it will rain...`
 		s <- lexer.Token{TokenDialogue, "But I think it will rain..."}
 	})
 }
+
+func TestDialogueAndText(t *testing.T) {
+	script := `Title: The One Day
+
+The sun shines...
+
+BOY
+This is a sunny day!
+(beat)
+But I think it will rain...
+
+The rain starts...
+
+BOY
+I knew it.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
+		s <- lexer.Token{TokenDataKey, "Title"}
+		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenText, "The sun shines..."}
+		s <- lexer.Token{TokenSpeaker, "BOY"}
+		s <- lexer.Token{TokenDialogue, "This is a sunny day!"}
+		s <- lexer.Token{TokenParenthetical, "beat"}
+		s <- lexer.Token{TokenDialogue, "But I think it will rain..."}
+		s <- lexer.Token{TokenText, "The rain starts..."}
+		s <- lexer.Token{TokenSpeaker, "BOY"}
+		s <- lexer.Token{TokenDialogue, "I knew it."}
+	})
+}
