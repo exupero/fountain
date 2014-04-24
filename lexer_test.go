@@ -168,3 +168,15 @@ I knew it.`
 		s <- lexer.Token{TokenDialogue, "I knew it."}
 	})
 }
+
+func TestIndentation(t *testing.T) {
+	script := `Title: The One Day
+
+    This is indented text.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
+		s <- lexer.Token{TokenDataKey, "Title"}
+		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenIndent, "    "}
+		s <- lexer.Token{TokenText, "This is indented text."}
+	})
+}

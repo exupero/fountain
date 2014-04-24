@@ -14,6 +14,7 @@ const (
 	TokenStar
 	TokenStarDouble
 	TokenUnderscore
+	TokenIndent
 
 	TokenSpeaker
 	TokenDialogue
@@ -70,6 +71,10 @@ func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 }
 
 func lexBody(lex *lexer.Lexer) lexer.StateFn {
+	if lex.Peek() == ' ' {
+		return lexIndent
+	}
+
 	for {
 		r := lex.NextRune()
 		if r == lexer.Eof {
@@ -85,6 +90,12 @@ func lexBody(lex *lexer.Lexer) lexer.StateFn {
 		}
 	}
 	return nil
+}
+
+func lexIndent(lex *lexer.Lexer) lexer.StateFn {
+	lex.AcceptRun(" ")
+	lex.Emit(TokenIndent)
+	return lexBody
 }
 
 func lexSpeaker(lex *lexer.Lexer) lexer.StateFn {
