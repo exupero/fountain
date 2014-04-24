@@ -68,10 +68,12 @@ func TestMultipleTextVariants(t *testing.T) {
 }
 
 func TestDialogue(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nBOY\nThis is a sunny day!", func(s chan lexer.Token) {
+	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nBOY\nThis is a sunny day!\n(beat)\nBut I think it will rain...", func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
-		s <- lexer.Token{TokenText, "This is a sunny day!"}
+		s <- lexer.Token{TokenDialogue, "This is a sunny day!"}
+		s <- lexer.Token{TokenParenthetical, "beat"}
+		s <- lexer.Token{TokenDialogue, "But I think it will rain..."}
 	})
 }

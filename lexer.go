@@ -16,6 +16,8 @@ const (
 	TokenTextUnderline
 
 	TokenSpeaker
+	TokenDialogue
+	TokenParenthetical
 )
 
 func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
@@ -89,7 +91,55 @@ func lexSpeaker(lex *lexer.Lexer) lexer.StateFn {
 	lex.Emit(TokenSpeaker)
 	lex.Accept("\n")
 	lex.Ignore()
-	return lexText
+	return lexDialogue
+}
+
+func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
+	r := lex.NextRune()
+
+	if r == -1 {
+		return nil
+	}
+
+	if r == '(' {
+		lex.Backup()
+		return lexParenthetical
+	}
+
+	for {
+		r = lex.NextRune()
+
+		if r == lexer.Eof {
+			lex.Emit(TokenDialogue)
+			break
+		}
+		if r == '\n' {
+			lex.Backup()
+			return lexDialogueText
+		}
+	}
+	return nil
+}
+
+func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
+	lex.Emit(TokenDialogue)
+	lex.Accept("\n")
+	lex.Ignore()
+	return lexDialogue
+}
+
+func lexParenthetical(lex *lexer.Lexer) lexer.StateFn {
+	lex.Accept("(")
+	lex.Ignore()
+
+	lex.Until(")")
+	lex.Emit(TokenParenthetical)
+
+	lex.Accept(")")
+	lex.Accept("\n")
+	lex.Ignore()
+
+	return lexDialogue
 }
 
 func lexText(lex *lexer.Lexer) lexer.StateFn {
