@@ -23,7 +23,7 @@ const (
 func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == '\n' {
@@ -41,7 +41,7 @@ func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
 func lexDataKey(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == ':' {
@@ -58,7 +58,7 @@ func lexDataKey(lex *lexer.Lexer) lexer.StateFn {
 
 func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 	r := lex.Peek()
-	if r == -1 {
+	if r == lexer.Eof {
 		return nil
 	}
 	if r == '\n' {
@@ -72,7 +72,7 @@ func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 func lexBody(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if strings.IndexRune("abcdefghijklmnopqrstuvwxyz*_", r) >= 0 {
@@ -97,7 +97,7 @@ func lexSpeaker(lex *lexer.Lexer) lexer.StateFn {
 func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
 	r := lex.NextRune()
 
-	if r == -1 {
+	if r == lexer.Eof {
 		return nil
 	}
 
@@ -145,7 +145,7 @@ func lexParenthetical(lex *lexer.Lexer) lexer.StateFn {
 func lexText(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == '*' {
@@ -176,7 +176,7 @@ func lexTextBold(lex *lexer.Lexer) lexer.StateFn {
 
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == '*' && lex.Peek() == '*' {
@@ -198,7 +198,7 @@ func lexTextItalic(lex *lexer.Lexer) lexer.StateFn {
 
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == '*' {
@@ -219,7 +219,7 @@ func lexTextUnderline(lex *lexer.Lexer) lexer.StateFn {
 
 	for {
 		r := lex.NextRune()
-		if r == -1 {
+		if r == lexer.Eof {
 			break
 		}
 		if r == '_' {

@@ -7,7 +7,9 @@ import (
 )
 
 func TestData(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\nCredit: Written By", func(s chan lexer.Token) {
+	script := `Title: The One Day
+Credit: Written By`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenDataKey, "Credit"}
@@ -16,7 +18,10 @@ func TestData(t *testing.T) {
 }
 
 func TestText(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nA CROWD gathers.", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+A CROWD gathers.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenText, "A CROWD gathers."}
@@ -24,7 +29,10 @@ func TestText(t *testing.T) {
 }
 
 func TestBold(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nA **CROWD** gathers.", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+A **CROWD** gathers.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenText, "A "}
@@ -34,7 +42,10 @@ func TestBold(t *testing.T) {
 }
 
 func TestItalic(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nA *CROWD* gathers.", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+A *CROWD* gathers.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenText, "A "}
@@ -44,7 +55,10 @@ func TestItalic(t *testing.T) {
 }
 
 func TestUnderline(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nA _CROWD_ gathers.", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+A _CROWD_ gathers.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenText, "A "}
@@ -54,7 +68,10 @@ func TestUnderline(t *testing.T) {
 }
 
 func TestMultipleTextVariants(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\n**A** *CROWD* _gathers_.", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+**A** *CROWD* _gathers_.`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenText, ""}
@@ -68,7 +85,13 @@ func TestMultipleTextVariants(t *testing.T) {
 }
 
 func TestDialogue(t *testing.T) {
-	lexer.AssertStream(t, Tokenize, "Title: The One Day\n\nBOY\nThis is a sunny day!\n(beat)\nBut I think it will rain...", func(s chan lexer.Token) {
+	script := `Title: The One Day
+
+BOY
+This is a sunny day!
+(beat)
+But I think it will rain...`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
