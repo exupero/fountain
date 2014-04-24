@@ -11,9 +11,9 @@ const (
 	TokenDataValue
 
 	TokenText
-	TokenTextBold
-	TokenTextItalic
-	TokenTextUnderline
+	TokenStar
+	TokenStarDouble
+	TokenUnderscore
 
 	TokenSpeaker
 	TokenDialogue
@@ -98,6 +98,7 @@ func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
 	r := lex.NextRune()
 
 	if r == lexer.Eof {
+		lex.Emit(TokenDialogue)
 		return nil
 	}
 
@@ -106,33 +107,56 @@ func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
 		return lexParenthetical
 	}
 
-	for {
-		r = lex.NextRune()
-
-		if r == lexer.Eof {
-			lex.Emit(TokenDialogue)
-			return nil
-		}
-		if r == '\n' {
-			lex.Backup()
-			return lexDialogueText
-		}
-	}
-	return nil
-}
-
-func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
-	lex.Emit(TokenDialogue)
-	lex.Accept("\n")
-	lex.Ignore()
-
-	if lex.NextRune() == '\n' {
+	if r == '\n' {
 		lex.Ignore()
 		return lexBody
 	}
 
 	lex.Backup()
-	return lexDialogue
+	return lexDialogueText
+}
+
+func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
+	for {
+		r := lex.NextRune()
+
+		if r == lexer.Eof {
+			lex.Emit(TokenDialogue)
+			return nil
+		}
+
+		if r == '\n' {
+			lex.Backup()
+			lex.Emit(TokenDialogue)
+			lex.Accept("\n")
+			lex.Ignore()
+			return lexDialogue
+		}
+
+		if r == '*' {
+			lex.Backup()
+			lex.Emit(TokenDialogue)
+			lex.Accept("*")
+
+			r = lex.NextRune()
+			if r == '*' {
+				lex.Emit(TokenStarDouble)
+				return lexDialogueText
+			}
+			lex.Backup()
+			lex.Emit(TokenStar)
+			return lexDialogueText
+		}
+
+		if r == '_' {
+			lex.Backup()
+			lex.Emit(TokenDialogue)
+			lex.Accept("_")
+			lex.Emit(TokenUnderscore)
+			return lexDialogueText
+		}
+	}
+	return nil
 }
 
 func lexParenthetical(lex *lexer.Lexer) lexer.StateFn {
@@ -152,101 +176,51 @@ func lexParenthetical(lex *lexer.Lexer) lexer.StateFn {
 func lexText(lex *lexer.Lexer) lexer.StateFn {
 	for {
 		r := lex.NextRune()
+
 		if r == lexer.Eof {
 			lex.Emit(TokenText)
-			break
+			return nil
 		}
-		if r == '*' {
-			if lex.Peek() == '*' {
-				lex.Backup()
-				lex.Emit(TokenText)
-				return lexTextBold
-			} else {
-				lex.Backup()
-				lex.Emit(TokenText)
-				return lexTextItalic
-			}
-		}
-		if r == '_' {
-			lex.Backup()
-			lex.Emit(TokenText)
-			return lexTextUnderline
-		}
+
 		if r == '\n' {
 			lex.Backup()
 			lex.Emit(TokenText)
 			lex.Accept("\n")
-			lex.Accept("\n")
 			lex.Ignore()
+
+			r = lex.NextRune()
+			if r == '\n' {
+				lex.Ignore()
+			} else {
+				lex.Backup()
+			}
 			return lexBody
+		}
+
+		if r == '*' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			lex.Accept("*")
+
+			r = lex.NextRune()
+			if r == '*' {
+				lex.Emit(TokenStarDouble)
+				return lexText
+			}
+			lex.Backup()
+			lex.Emit(TokenStar)
+			return lexText
+		}
+
+		if r == '_' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			lex.Accept("_")
+			lex.Emit(TokenUnderscore)
+			return lexText
 		}
 	}
 	return nil
-}
-
-func lexTextBold(lex *lexer.Lexer) lexer.StateFn {
-	lex.Accept("*")
-	lex.Accept("*")
-	lex.Ignore()
-
-	for {
-		r := lex.NextRune()
-		if r == lexer.Eof {
-			break
-		}
-		if r == '*' && lex.Peek() == '*' {
-			lex.Backup()
-			break
-		}
-	}
-	lex.Emit(TokenTextBold)
-
-	lex.Accept("*")
-	lex.Accept("*")
-	lex.Ignore()
-	return lexText
-}
-
-func lexTextItalic(lex *lexer.Lexer) lexer.StateFn {
-	lex.Accept("*")
-	lex.Ignore()
-
-	for {
-		r := lex.NextRune()
-		if r == lexer.Eof {
-			break
-		}
-		if r == '*' {
-			lex.Backup()
-			break
-		}
-	}
-	lex.Emit(TokenTextItalic)
-
-	lex.Accept("*")
-	lex.Ignore()
-	return lexText
-}
-
-func lexTextUnderline(lex *lexer.Lexer) lexer.StateFn {
-	lex.Accept("_")
-	lex.Ignore()
-
-	for {
-		r := lex.NextRune()
-		if r == lexer.Eof {
-			break
-		}
-		if r == '_' {
-			lex.Backup()
-			break
-		}
-	}
-	lex.Emit(TokenTextUnderline)
-
-	lex.Accept("_")
-	lex.Ignore()
-	return lexText
 }
 
 func Tokenize(src string) *lexer.Lexer {
