@@ -180,3 +180,21 @@ func TestIndentation(t *testing.T) {
 		s <- lexer.Token{TokenText, "This is indented text."}
 	})
 }
+
+func TestComment(t *testing.T) {
+	script := `Title: The One Day
+
+[[Unfinished]]
+
+The End`
+	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
+		s <- lexer.Token{TokenDataKey, "Title"}
+		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenText, ""}
+		s <- lexer.Token{TokenCommentOpen, "[["}
+		s <- lexer.Token{TokenText, "Unfinished"}
+		s <- lexer.Token{TokenCommentClose, "]]"}
+		s <- lexer.Token{TokenText, ""}
+		s <- lexer.Token{TokenText, "The End"}
+	})
+}

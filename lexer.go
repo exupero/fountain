@@ -19,6 +19,9 @@ const (
 	TokenSpeaker
 	TokenDialogue
 	TokenParenthetical
+
+	TokenCommentOpen
+	TokenCommentClose
 )
 
 func lexDataValue(lex *lexer.Lexer) lexer.StateFn {
@@ -80,7 +83,7 @@ func lexBody(lex *lexer.Lexer) lexer.StateFn {
 		if r == lexer.Eof {
 			break
 		}
-		if strings.IndexRune("abcdefghijklmnopqrstuvwxyz*_", r) >= 0 {
+		if strings.IndexRune("abcdefghijklmnopqrstuvwxyz*_()[]", r) >= 0 {
 			lex.Backup()
 			return lexText
 		}
@@ -228,6 +231,24 @@ func lexText(lex *lexer.Lexer) lexer.StateFn {
 			lex.Emit(TokenText)
 			lex.Accept("_")
 			lex.Emit(TokenUnderscore)
+			return lexText
+		}
+
+		if r == '[' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			lex.Accept("[")
+			lex.Accept("[")
+			lex.Emit(TokenCommentOpen)
+			return lexText
+		}
+
+		if r == ']' {
+			lex.Backup()
+			lex.Emit(TokenText)
+			lex.Accept("]")
+			lex.Accept("]")
+			lex.Emit(TokenCommentClose)
 			return lexText
 		}
 	}
