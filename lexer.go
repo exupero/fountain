@@ -10,6 +10,7 @@ const (
 	TokenDataKey lexer.TokenType = iota
 	TokenDataValue
 
+	TokenParagraph
 	TokenText
 	TokenStar
 	TokenStarDouble
@@ -62,20 +63,26 @@ func lexDataKey(lex *lexer.Lexer) lexer.StateFn {
 
 func lexDataBlock(lex *lexer.Lexer) lexer.StateFn {
 	r := lex.Peek()
+
 	if r == lexer.Eof {
 		return nil
 	}
+
 	if r == '\n' {
-		lex.Accept("\n")
-		lex.Ignore()
+		lex.Backup()
 		return lexBody
 	}
+
 	return lexDataKey
 }
 
 func lexBody(lex *lexer.Lexer) lexer.StateFn {
 	if lex.Peek() == ' ' {
 		return lexIndent
+	}
+
+	if lex.Peek() == '\n' {
+		return lexParagraph
 	}
 
 	for {
@@ -87,12 +94,18 @@ func lexBody(lex *lexer.Lexer) lexer.StateFn {
 			lex.Backup()
 			return lexText
 		}
-		if strings.IndexRune("\n", r) >= 0 {
+		if r == '\n' {
 			lex.Backup()
 			return lexSpeaker
 		}
 	}
 	return nil
+}
+
+func lexParagraph(lex *lexer.Lexer) lexer.StateFn {
+	lex.AcceptRun("\n")
+	lex.Emit(TokenParagraph)
+	return lexBody
 }
 
 func lexIndent(lex *lexer.Lexer) lexer.StateFn {
@@ -122,8 +135,8 @@ func lexDialogue(lex *lexer.Lexer) lexer.StateFn {
 	}
 
 	if r == '\n' {
-		lex.Ignore()
-		return lexBody
+		lex.Backup()
+		return lexParagraph
 	}
 
 	lex.Backup()
@@ -143,7 +156,6 @@ func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
 			lex.Backup()
 			lex.Emit(TokenDialogue)
 			lex.Accept("\n")
-			lex.Ignore()
 			return lexDialogue
 		}
 
@@ -199,16 +211,7 @@ func lexText(lex *lexer.Lexer) lexer.StateFn {
 		if r == '\n' {
 			lex.Backup()
 			lex.Emit(TokenText)
-			lex.Accept("\n")
-			lex.Ignore()
-
-			r = lex.NextRune()
-			if r == '\n' {
-				lex.Ignore()
-			} else {
-				lex.Backup()
-			}
-			return lexBody
+			return lexParagraph
 		}
 
 		if r == '*' {

@@ -24,6 +24,7 @@ A CROWD gathers.`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, "A CROWD gathers."}
 	})
 }
@@ -35,6 +36,7 @@ A **CROWD** gathers.`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, "A "}
 		s <- lexer.Token{TokenStarDouble, "**"}
 		s <- lexer.Token{TokenText, "CROWD"}
@@ -50,6 +52,7 @@ A *CROWD* gathers.`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, "A "}
 		s <- lexer.Token{TokenStar, "*"}
 		s <- lexer.Token{TokenText, "CROWD"}
@@ -65,6 +68,7 @@ A _CROWD_ gathers.`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, "A "}
 		s <- lexer.Token{TokenUnderscore, "_"}
 		s <- lexer.Token{TokenText, "CROWD"}
@@ -80,6 +84,7 @@ func TestMultipleTextVariants(t *testing.T) {
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, ""}
 		s <- lexer.Token{TokenStarDouble, "**"}
 		s <- lexer.Token{TokenText, "A"}
@@ -106,6 +111,7 @@ But I think it will rain...`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
 		s <- lexer.Token{TokenDialogue, "This is a sunny day!"}
 		s <- lexer.Token{TokenParenthetical, "beat"}
@@ -121,6 +127,7 @@ BOY
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
 		s <- lexer.Token{TokenDialogue, ""}
 		s <- lexer.Token{TokenStarDouble, "**"}
@@ -157,13 +164,18 @@ I knew it.`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, "The sun shines..."}
+		s <- lexer.Token{TokenParagraph, "\n\n"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
 		s <- lexer.Token{TokenDialogue, "This is a sunny day!"}
 		s <- lexer.Token{TokenParenthetical, "beat"}
 		s <- lexer.Token{TokenDialogue, "But I think it will rain..."}
+		s <- lexer.Token{TokenParagraph, "\n\n"}
 		s <- lexer.Token{TokenText, "The rain starts..."}
+		s <- lexer.Token{TokenParagraph, "\n\n"}
 		s <- lexer.Token{TokenText, "...and then it pours."}
+		s <- lexer.Token{TokenParagraph, "\n\n"}
 		s <- lexer.Token{TokenSpeaker, "BOY"}
 		s <- lexer.Token{TokenDialogue, "I knew it."}
 	})
@@ -176,6 +188,7 @@ func TestIndentation(t *testing.T) {
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenIndent, "    "}
 		s <- lexer.Token{TokenText, "This is indented text."}
 	})
@@ -190,11 +203,13 @@ The End`
 	lexer.AssertStream(t, Tokenize, script, func(s chan lexer.Token) {
 		s <- lexer.Token{TokenDataKey, "Title"}
 		s <- lexer.Token{TokenDataValue, "The One Day"}
+		s <- lexer.Token{TokenParagraph, "\n"}
 		s <- lexer.Token{TokenText, ""}
 		s <- lexer.Token{TokenCommentOpen, "[["}
 		s <- lexer.Token{TokenText, "Unfinished"}
 		s <- lexer.Token{TokenCommentClose, "]]"}
 		s <- lexer.Token{TokenText, ""}
+		s <- lexer.Token{TokenParagraph, "\n\n"}
 		s <- lexer.Token{TokenText, "The End"}
 	})
 }
