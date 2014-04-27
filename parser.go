@@ -32,8 +32,7 @@ func (p *Parser) Next() (lexer.Token, bool) {
 		p.hasNext = false
 		return p.next, true
 	}
-	tok, ok := p.lexer.Next()
-	return tok, ok
+	return p.lexer.Next()
 }
 
 func (p *Parser) Peek() (lexer.Token, bool) {
@@ -171,6 +170,10 @@ func parseDialogue(p *Parser) state {
 		if !ok {
 			return nil
 		}
+		if tok.Type == TokenParagraph {
+			return parseParagraph
+		}
+
 		if tok.Type == TokenSpeaker {
 			line := Line{
 				chunks: []Chunk{
@@ -190,31 +193,42 @@ func parseDialogue(p *Parser) state {
 			lines = append(lines, line)
 		}
 		if tok.Type == TokenDialogue {
-			line := Line{
-				chunks: []Chunk{
-					Chunk{content: tok.Value},
-				},
-				typ: "dialogue",
-			}
+			line := parseDialogueText(p, tok)
 			lines = append(lines, line)
 		}
 	}
 	return nil
+}
 
-	tok, ok := p.Next()
-	if !ok {
-		return nil
+func parseDialogueText(p *Parser, tok lexer.Token) Line {
+	style := styleManager{false, false, false,}
+	chunks := []Chunk{Chunk{content: tok.Value}}
+
+	for {
+		// Check before consuming.
+		tok, ok := p.Peek()
+		if !ok || tok.Type == TokenParagraph || tok.Type == TokenSpeaker {
+			break
+		}
+
+		tok, _ = p.Next()
+		if tok.Type == TokenDialogue {
+			chunks = append(chunks, Chunk{content: tok.Value, styles: style.list()})
+		}
+
+		if tok.Type == TokenStarDouble {
+			style.bold = !style.bold
+		}
+		if tok.Type == TokenStar {
+			style.italic = !style.italic
+		}
+		if tok.Type == TokenUnderscore {
+			style.underline = !style.underline
+		}
 	}
-	speaker := tok.Value
-	paragraph := Paragraph{
-		lines: []Line{
-			Line{
-				chunks: []Chunk{Chunk{content: speaker}},
-				typ: "speaker",
-			},
-		},
+
+	return Line{
+		chunks: chunks,
 		typ: "dialogue",
 	}
-	p.Doc.Body = append(p.Doc.Body, paragraph)
-	return nil
 }

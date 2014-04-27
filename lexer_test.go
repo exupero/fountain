@@ -160,7 +160,10 @@ The rain starts...
 ...and then it pours.
 
 BOY
-I knew it.`
+I knew it.
+
+GIRL
+I like rain.`
 	lexer.AssertStream(t, Tokenize, script, []lexer.Token{
 		lexer.Token{TokenDataKey, "Title"},
 		lexer.Token{TokenDataValue, "The One Day"},
@@ -178,6 +181,9 @@ I knew it.`
 		lexer.Token{TokenParagraph, "\n\n"},
 		lexer.Token{TokenSpeaker, "BOY"},
 		lexer.Token{TokenDialogue, "I knew it."},
+		lexer.Token{TokenParagraph, "\n\n"},
+		lexer.Token{TokenSpeaker, "GIRL"},
+		lexer.Token{TokenDialogue, "I like rain."},
 	})
 }
 

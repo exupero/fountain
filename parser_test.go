@@ -41,15 +41,15 @@ The MEN ran down the *street*. *They **jumped** into the _ditch_.*`
 			lines: []Line {
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "The MEN ran down the ", styles: []string{}},
+						Chunk{content: "The MEN ran down the "},
 						Chunk{content: "street", styles: []string{"italic"}},
-						Chunk{content: ". ", styles: []string{}},
+						Chunk{content: ". "},
 						Chunk{content: "They ", styles: []string{"italic"}},
 						Chunk{content: "jumped", styles: []string{"bold", "italic"}},
 						Chunk{content: " into the ", styles: []string{"italic"}},
 						Chunk{content: "ditch", styles: []string{"italic", "underline"}},
 						Chunk{content: ".", styles: []string{"italic"}},
-						Chunk{content: "", styles: []string{}},
+						Chunk{content: ""},
 					},
 					typ: "action",
 				},
@@ -73,7 +73,7 @@ The MEN stood.`
 			lines: []Line{
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "The BOYS cheered.", styles: []string{}},
+						Chunk{content: "The BOYS cheered."},
 					},
 					typ: "action",
 				},
@@ -84,7 +84,7 @@ The MEN stood.`
 			lines: []Line{
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "The WOMEN sang.", styles: []string{}},
+						Chunk{content: "The WOMEN sang."},
 					},
 					typ: "action",
 				},
@@ -95,7 +95,7 @@ The MEN stood.`
 			lines: []Line{
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "The MEN stood.", styles: []string{}},
+						Chunk{content: "The MEN stood."},
 					},
 					typ: "action",
 				},
@@ -110,31 +110,56 @@ func TestDocDialogue(t *testing.T) {
 
 BOY
 (triumphantly)
-I think that's a great idea!`
+*I think _that's_ a **great** idea*!
+
+GIRL
+Sure it is...`
 
 	assertBody(t, script, []Paragraph{
 		Paragraph{
 			lines: []Line{
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "BOY", styles: []string{}},
+						Chunk{content: "BOY"},
 					},
 					typ: "speaker",
 				},
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "triumphantly", styles: []string{}},
+						Chunk{content: "triumphantly"},
 					},
 					typ: "parenthetical",
 				},
 				Line{
 					chunks: []Chunk{
-						Chunk{content: "I think that's a great idea!", styles: []string{}},
+						Chunk{content: ""},
+						Chunk{content: "I think ", styles: []string{"italic"}},
+						Chunk{content: "that's", styles: []string{"italic", "underline"}},
+						Chunk{content: " a ", styles: []string{"italic"}},
+						Chunk{content: "great", styles: []string{"bold", "italic"}},
+						Chunk{content: " idea", styles: []string{"italic"}},
+						Chunk{content: "!"},
 					},
 					typ: "dialogue",
 				},
 			},
 			typ: "dialogue",
+		},
+		Paragraph{
+			lines: []Line{
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "GIRL"},
+					},
+					typ: "speaker",
+				},
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "Sure it is..."},
+					},
+					typ: "dialogue",
+				},
+			},
 		},
 	})
 }
