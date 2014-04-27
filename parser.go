@@ -4,15 +4,9 @@ import (
 	"github.com/exupero/state-lexer"
 )
 
-type Document struct {
-	Title, Credit, Author, DraftDate string
-	Data map[string]string
-}
-
 type Parser struct {
 	lexer *lexer.Lexer
 	Doc *Document
-	Value string
 }
 
 type state func(*Parser) state
@@ -22,6 +16,7 @@ func Parse(src string) *Document {
 		lexer: Tokenize(src),
 		Doc: &Document{
 			Data: make(map[string]string),
+			Body: []Line{},
 		},
 	}
 	for state := parseDoc; state != nil; {
@@ -30,16 +25,8 @@ func Parse(src string) *Document {
 	return parser.Doc
 }
 
-func (p *Parser) Accept(tokenType lexer.TokenType) bool {
-	tok, ok := p.lexer.Next()
-	if !ok {
-		return false
-	}
-	if tok.Type == tokenType {
-		p.Value = tok.Value
-		return true
-	}
-	return false
+func (p *Parser) Next() (lexer.Token, bool) {
+	return p.lexer.Next()
 }
 
 func parseDoc(p *Parser) state {
@@ -48,15 +35,19 @@ func parseDoc(p *Parser) state {
 
 func parseData(p *Parser) state {
 	for {
-		if !p.Accept(TokenDataKey) {
-			break
+		tok, ok := p.Next()
+		if !ok || tok.Type != TokenDataKey {
+			if tok.Type == TokenParagraph {
+				return parseParagraph
+			}
 		}
-		key := p.Value
+		key := tok.Value
 
-		if !p.Accept(TokenDataValue) {
-			break
+		tok, ok = p.Next()
+		if !ok || tok.Type != TokenDataValue {
+			return nil
 		}
-		value := p.Value
+		value := tok.Value
 
 		if key == "Title" {
 			p.Doc.Title = value
@@ -80,5 +71,44 @@ func parseData(p *Parser) state {
 
 		p.Doc.Data[key] = value
 	}
+	return nil
+}
+
+type styleManager struct {
+	bold, italic, underline bool
+}
+
+func (s *styleManager) list() []string {
+	styles := []string{}
+	if s.bold { styles = append(styles, "bold") }
+	if s.italic { styles = append(styles, "italic") }
+	if s.underline { styles = append(styles, "underline") }
+	return styles
+}
+
+func parseParagraph(p *Parser) state {
+	line := []Text{}
+	style := styleManager{false, false, false}
+
+	for {
+		tok, ok := p.Next()
+		if !ok || tok.Type == TokenParagraph {
+			break
+		}
+		if tok.Type == TokenText {
+			line = append(line, Text{content: tok.Value, styles: style.list()})
+		}
+		if tok.Type == TokenStarDouble {
+			style.bold = !style.bold
+		}
+		if tok.Type == TokenStar {
+			style.italic = !style.italic
+		}
+		if tok.Type == TokenUnderscore {
+			style.underline = !style.underline
+		}
+	}
+
+	p.Doc.Body = append(p.Doc.Body, line)
 	return nil
 }
