@@ -36,17 +36,25 @@ func TestDocTextVariants(t *testing.T) {
 
 The MEN ran down the *street*. *They **jumped** into the _ditch_.*`
 
-	assertBody(t, script, []Line{
-		Line{
-			Text{content: "The MEN ran down the ", styles: []string{}},
-			Text{content: "street", styles: []string{"italic"}},
-			Text{content: ". ", styles: []string{}},
-			Text{content: "They ", styles: []string{"italic"}},
-			Text{content: "jumped", styles: []string{"bold", "italic"}},
-			Text{content: " into the ", styles: []string{"italic"}},
-			Text{content: "ditch", styles: []string{"italic", "underline"}},
-			Text{content: ".", styles: []string{"italic"}},
-			Text{content: "", styles: []string{}},
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			lines: []Line {
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "The MEN ran down the ", styles: []string{}},
+						Chunk{content: "street", styles: []string{"italic"}},
+						Chunk{content: ". ", styles: []string{}},
+						Chunk{content: "They ", styles: []string{"italic"}},
+						Chunk{content: "jumped", styles: []string{"bold", "italic"}},
+						Chunk{content: " into the ", styles: []string{"italic"}},
+						Chunk{content: "ditch", styles: []string{"italic", "underline"}},
+						Chunk{content: ".", styles: []string{"italic"}},
+						Chunk{content: "", styles: []string{}},
+					},
+					typ: "action",
+				},
+			},
+			typ: "action",
 		},
 	})
 }
@@ -60,14 +68,78 @@ The WOMEN sang.
 
 The MEN stood.`
 
-	assertBody(t, script, []Line{
-		Line{Text{content: "The BOYS cheered.", styles: []string{}}},
-		Line{Text{content: "The WOMEN sang.", styles: []string{}}},
-		Line{Text{content: "The MEN stood.", styles: []string{}}},
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			lines: []Line{
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "The BOYS cheered.", styles: []string{}},
+					},
+					typ: "action",
+				},
+			},
+			typ: "action",
+		},
+		Paragraph{
+			lines: []Line{
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "The WOMEN sang.", styles: []string{}},
+					},
+					typ: "action",
+				},
+			},
+			typ: "action",
+		},
+		Paragraph{
+			lines: []Line{
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "The MEN stood.", styles: []string{}},
+					},
+					typ: "action",
+				},
+			},
+			typ: "action",
+		},
 	})
 }
 
-func assertBody(t *testing.T, script string, expectedLines []Line) {
+func TestDocDialogue(t *testing.T) {
+	script := `Title: The One Day
+
+BOY
+(triumphantly)
+I think that's a great idea!`
+
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			lines: []Line{
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "BOY", styles: []string{}},
+					},
+					typ: "speaker",
+				},
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "triumphantly", styles: []string{}},
+					},
+					typ: "parenthetical",
+				},
+				Line{
+					chunks: []Chunk{
+						Chunk{content: "I think that's a great idea!", styles: []string{}},
+					},
+					typ: "dialogue",
+				},
+			},
+			typ: "dialogue",
+		},
+	})
+}
+
+func assertBody(t *testing.T, script string, expectedParagraphs []Paragraph) {
 	doc := Parse(script)
 
 	mismatch := func() {
@@ -76,36 +148,55 @@ Expected: %s
 Actual:   %s
 Source:
 -------
-%s`, expectedLines, doc.Body, script)
+%s`, expectedParagraphs, doc.Body, script)
 	}
 
-	if len(doc.Body) != len(expectedLines) {
+	if len(doc.Body) != len(expectedParagraphs) {
 		mismatch()
 		return
 	}
 
-	for i, expectedLine := range expectedLines {
-		if len(doc.Body[i]) != len(expectedLine) {
+	for i, expectedParagraph := range expectedParagraphs {
+		actualParagraph := doc.Body[i]
+
+		if len(actualParagraph.lines) != len(expectedParagraph.lines) {
 			mismatch()
 			return
 		}
 
-		for j, expectedChunk := range expectedLine {
-			actual := doc.Body[i][j]
-			if actual.content != expectedChunk.content {
+		for j, expectedLine := range expectedParagraph.lines {
+			actualLine := doc.Body[i].lines[j]
+
+			if actualLine.typ != expectedLine.typ {
 				mismatch()
 				return
 			}
 
-			if len(actual.styles) != len(expectedChunk.styles) {
+			if len(actualLine.chunks) != len(expectedLine.chunks) {
 				mismatch()
 				return
 			}
 
-			for k, expectedStyle := range expectedChunk.styles {
-				if actual.styles[k] != expectedStyle {
+			for k, expectedChunk := range expectedLine.chunks {
+				actualChunk := actualLine.chunks[k]
+
+				if actualChunk.content != expectedChunk.content {
 					mismatch()
 					return
+				}
+
+				if len(actualChunk.styles) != len(expectedChunk.styles) {
+					mismatch()
+					return
+				}
+
+				for m, expectedStyle := range expectedChunk.styles {
+					actualStyle := actualChunk.styles[m]
+
+					if actualStyle != expectedStyle {
+						mismatch()
+						return
+					}
 				}
 			}
 		}

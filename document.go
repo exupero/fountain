@@ -1,23 +1,23 @@
 package fountain
 
-import (
-	"fmt"
-)
-
-type Text struct {
+type Chunk struct {
 	content string
 	styles []string
 }
 
-func (t Text) String() string {
-	return fmt.Sprintf("{\"%s\" %s}", t.content, t.styles)
+type Line struct {
+	chunks []Chunk
+	typ string
 }
 
-type Line []Text
+type Paragraph struct {
+	lines []Line
+	typ string
+}
 
 type Document struct {
 	Title, Credit, Author, DraftDate string
 	Data map[string]string
-	Body []Line
+	Body []Paragraph
 }
 

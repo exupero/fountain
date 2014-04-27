@@ -7,6 +7,8 @@ import (
 type Parser struct {
 	lexer *lexer.Lexer
 	Doc *Document
+	hasNext bool
+	next lexer.Token
 }
 
 type state func(*Parser) state
@@ -16,7 +18,7 @@ func Parse(src string) *Document {
 		lexer: Tokenize(src),
 		Doc: &Document{
 			Data: make(map[string]string),
-			Body: []Line{},
+			Body: []Paragraph{},
 		},
 	}
 	for state := parseDoc; state != nil; {
@@ -26,7 +28,21 @@ func Parse(src string) *Document {
 }
 
 func (p *Parser) Next() (lexer.Token, bool) {
-	return p.lexer.Next()
+	if p.hasNext {
+		p.hasNext = false
+		return p.next, true
+	}
+	tok, ok := p.lexer.Next()
+	return tok, ok
+}
+
+func (p *Parser) Peek() (lexer.Token, bool) {
+	tok, ok := p.lexer.Next()
+	if ok {
+		p.hasNext = true
+		p.next = tok
+	}
+	return tok, ok
 }
 
 func parseDoc(p *Parser) state {
@@ -74,6 +90,17 @@ func parseData(p *Parser) state {
 	return nil
 }
 
+func parseParagraph(p *Parser) state {
+	tok, ok := p.Peek()
+	if !ok {
+		return nil
+	}
+	if tok.Type == TokenSpeaker {
+		return parseDialogue
+	}
+	return parseAction
+}
+
 type styleManager struct {
 	bold, italic, underline bool
 }
@@ -86,23 +113,35 @@ func (s *styleManager) list() []string {
 	return styles
 }
 
-func parseParagraph(p *Parser) state {
-	line := []Text{}
+func parseAction(p *Parser) state {
 	style := styleManager{false, false, false}
+	chunks := []Chunk{}
+
+	defer func() {
+		paragraph := Paragraph{
+			lines: []Line{
+				Line{
+					chunks: chunks,
+					typ: "action",
+				},
+			},
+			typ: "action",
+		}
+		p.Doc.Body = append(p.Doc.Body, paragraph)
+	}()
 
 	for {
 		tok, ok := p.Next()
 		if !ok {
-			p.Doc.Body = append(p.Doc.Body, line)
 			return nil
 		}
 		if tok.Type == TokenParagraph {
-			p.Doc.Body = append(p.Doc.Body, line)
 			return parseParagraph
 		}
 		if tok.Type == TokenText {
-			line = append(line, Text{content: tok.Value, styles: style.list()})
+			chunks = append(chunks, Chunk{content: tok.Value, styles: style.list()})
 		}
+
 		if tok.Type == TokenStarDouble {
 			style.bold = !style.bold
 		}
@@ -113,5 +152,69 @@ func parseParagraph(p *Parser) state {
 			style.underline = !style.underline
 		}
 	}
+	return nil
+}
+
+func parseDialogue(p *Parser) state {
+	lines := []Line{}
+
+	defer func() {
+		paragraph := Paragraph{
+			lines: lines,
+			typ: "dialogue",
+		}
+		p.Doc.Body = append(p.Doc.Body, paragraph)
+	}()
+
+	for {
+		tok, ok := p.Next()
+		if !ok {
+			return nil
+		}
+		if tok.Type == TokenSpeaker {
+			line := Line{
+				chunks: []Chunk{
+					Chunk{content: tok.Value},
+				},
+				typ: "speaker",
+			}
+			lines = append(lines, line)
+		}
+		if tok.Type == TokenParenthetical {
+			line := Line{
+				chunks: []Chunk{
+					Chunk{content: tok.Value},
+				},
+				typ: "parenthetical",
+			}
+			lines = append(lines, line)
+		}
+		if tok.Type == TokenDialogue {
+			line := Line{
+				chunks: []Chunk{
+					Chunk{content: tok.Value},
+				},
+				typ: "dialogue",
+			}
+			lines = append(lines, line)
+		}
+	}
+	return nil
+
+	tok, ok := p.Next()
+	if !ok {
+		return nil
+	}
+	speaker := tok.Value
+	paragraph := Paragraph{
+		lines: []Line{
+			Line{
+				chunks: []Chunk{Chunk{content: speaker}},
+				typ: "speaker",
+			},
+		},
+		typ: "dialogue",
+	}
+	p.Doc.Body = append(p.Doc.Body, paragraph)
 	return nil
 }
