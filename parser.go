@@ -92,8 +92,13 @@ func parseParagraph(p *Parser) state {
 
 	for {
 		tok, ok := p.Next()
-		if !ok || tok.Type == TokenParagraph {
-			break
+		if !ok {
+			p.Doc.Body = append(p.Doc.Body, line)
+			return nil
+		}
+		if tok.Type == TokenParagraph {
+			p.Doc.Body = append(p.Doc.Body, line)
+			return parseParagraph
 		}
 		if tok.Type == TokenText {
 			line = append(line, Text{content: tok.Value, styles: style.list()})
@@ -108,7 +113,5 @@ func parseParagraph(p *Parser) state {
 			style.underline = !style.underline
 		}
 	}
-
-	p.Doc.Body = append(p.Doc.Body, line)
 	return nil
 }

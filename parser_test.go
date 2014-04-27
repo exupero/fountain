@@ -35,9 +35,8 @@ func TestDocTextVariants(t *testing.T) {
 	script := `Title: The One Day
 
 The MEN ran down the *street*. *They **jumped** into the _ditch_.*`
-	doc := Parse(script)
-	
-	expectedLines := []Line{
+
+	assertBody(t, script, []Line{
 		Line{
 			Text{content: "The MEN ran down the ", styles: []string{}},
 			Text{content: "street", styles: []string{"italic"}},
@@ -49,7 +48,27 @@ The MEN ran down the *street*. *They **jumped** into the _ditch_.*`
 			Text{content: ".", styles: []string{"italic"}},
 			Text{content: "", styles: []string{}},
 		},
-	}
+	})
+}
+
+func TestDocTextParagraphs(t *testing.T) {
+	script := `Title: The One Day
+
+The BOYS cheered.
+
+The WOMEN sang.
+
+The MEN stood.`
+
+	assertBody(t, script, []Line{
+		Line{Text{content: "The BOYS cheered.", styles: []string{}}},
+		Line{Text{content: "The WOMEN sang.", styles: []string{}}},
+		Line{Text{content: "The MEN stood.", styles: []string{}}},
+	})
+}
+
+func assertBody(t *testing.T, script string, expectedLines []Line) {
+	doc := Parse(script)
 
 	mismatch := func() {
 		t.Errorf(`Body wrong.
