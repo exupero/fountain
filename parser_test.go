@@ -164,6 +164,79 @@ Sure it is...`
 	})
 }
 
+func TestMultilineAction(t *testing.T) {
+	script := `Title: The One Day
+
+This action
+takes place over
+multiple lines.`
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "This action"},
+					},
+					Type: "action",
+				},
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "takes place over"},
+					},
+					Type: "action",
+				},
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "multiple lines."},
+					},
+					Type: "action",
+				},
+			},
+			Type: "action",
+		},
+	})
+}
+
+func TestParentheticalAfterDialogue(t *testing.T) {
+	script := `Title: The One Day
+
+BOY
+This is a great day!
+(pause)
+Or is it...`
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "BOY"},
+					},
+					Type: "speaker",
+				},
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "This is a great day!"},
+					},
+					Type: "dialogue",
+				},
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "pause"},
+					},
+					Type: "parenthetical",
+				},
+				Line {
+					Chunks: []Chunk{
+						Chunk{Content: "Or is it..."},
+					},
+					Type: "dialogue",
+				},
+			},
+			Type: "dialogue",
+		},
+	})
+}
+
 func assertBody(t *testing.T, script string, expectedParagraphs []Paragraph) {
 	doc := Parse(script)
 

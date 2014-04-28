@@ -114,18 +114,12 @@ func (s *styleManager) list() []string {
 
 func parseAction(p *Parser) state {
 	style := styleManager{false, false, false}
+	lines := []Line{}
 	chunks := []Chunk{}
 
 	defer func() {
-		paragraph := Paragraph{
-			Lines: []Line{
-				Line{
-					Chunks: chunks,
-					Type: "action",
-				},
-			},
-			Type: "action",
-		}
+		lines = append(lines, Line{Chunks: chunks, Type: "action"})
+		paragraph := Paragraph{Lines: lines, Type: "action"}
 		p.Doc.Body = append(p.Doc.Body, paragraph)
 	}()
 
@@ -135,7 +129,11 @@ func parseAction(p *Parser) state {
 			return nil
 		}
 		if tok.Type == TokenParagraph {
-			return parseParagraph
+			if tok.Value == "\n\n" {
+				return parseParagraph
+			}
+			lines = append(lines, Line{Chunks: chunks, Type: "action"})
+			chunks = []Chunk{}
 		}
 		if tok.Type == TokenText {
 			chunks = append(chunks, Chunk{Content: tok.Value, Styles: style.list()})
@@ -207,7 +205,7 @@ func parseDialogueText(p *Parser, tok lexer.Token) Line {
 	for {
 		// Check before consuming.
 		tok, ok := p.Peek()
-		if !ok || tok.Type == TokenParagraph || tok.Type == TokenSpeaker {
+		if !ok || tok.Type == TokenParagraph || tok.Type == TokenSpeaker || tok.Type == TokenParenthetical {
 			break
 		}
 
