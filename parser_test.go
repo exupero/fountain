@@ -38,23 +38,23 @@ The MEN ran down the *street*. *They **jumped** into the _ditch_.*`
 
 	assertBody(t, script, []Paragraph{
 		Paragraph{
-			lines: []Line {
+			Lines: []Line {
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "The MEN ran down the "},
-						Chunk{content: "street", styles: []string{"italic"}},
-						Chunk{content: ". "},
-						Chunk{content: "They ", styles: []string{"italic"}},
-						Chunk{content: "jumped", styles: []string{"bold", "italic"}},
-						Chunk{content: " into the ", styles: []string{"italic"}},
-						Chunk{content: "ditch", styles: []string{"italic", "underline"}},
-						Chunk{content: ".", styles: []string{"italic"}},
-						Chunk{content: ""},
+					Chunks: []Chunk{
+						Chunk{Content: "The MEN ran down the "},
+						Chunk{Content: "street", Styles: []string{"italic"}},
+						Chunk{Content: ". "},
+						Chunk{Content: "They ", Styles: []string{"italic"}},
+						Chunk{Content: "jumped", Styles: []string{"bold", "italic"}},
+						Chunk{Content: " into the ", Styles: []string{"italic"}},
+						Chunk{Content: "ditch", Styles: []string{"italic", "underline"}},
+						Chunk{Content: ".", Styles: []string{"italic"}},
+						Chunk{Content: ""},
 					},
-					typ: "action",
+					Type: "action",
 				},
 			},
-			typ: "action",
+			Type: "action",
 		},
 	})
 }
@@ -70,37 +70,37 @@ The MEN stood.`
 
 	assertBody(t, script, []Paragraph{
 		Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "The BOYS cheered."},
+					Chunks: []Chunk{
+						Chunk{Content: "The BOYS cheered."},
 					},
-					typ: "action",
+					Type: "action",
 				},
 			},
-			typ: "action",
+			Type: "action",
 		},
 		Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "The WOMEN sang."},
+					Chunks: []Chunk{
+						Chunk{Content: "The WOMEN sang."},
 					},
-					typ: "action",
+					Type: "action",
 				},
 			},
-			typ: "action",
+			Type: "action",
 		},
 		Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "The MEN stood."},
+					Chunks: []Chunk{
+						Chunk{Content: "The MEN stood."},
 					},
-					typ: "action",
+					Type: "action",
 				},
 			},
-			typ: "action",
+			Type: "action",
 		},
 	})
 }
@@ -117,47 +117,47 @@ Sure it is...`
 
 	assertBody(t, script, []Paragraph{
 		Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "BOY"},
+					Chunks: []Chunk{
+						Chunk{Content: "BOY"},
 					},
-					typ: "speaker",
+					Type: "speaker",
 				},
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "triumphantly"},
+					Chunks: []Chunk{
+						Chunk{Content: "triumphantly"},
 					},
-					typ: "parenthetical",
+					Type: "parenthetical",
 				},
 				Line{
-					chunks: []Chunk{
-						Chunk{content: ""},
-						Chunk{content: "I think ", styles: []string{"italic"}},
-						Chunk{content: "that's", styles: []string{"italic", "underline"}},
-						Chunk{content: " a ", styles: []string{"italic"}},
-						Chunk{content: "great", styles: []string{"bold", "italic"}},
-						Chunk{content: " idea", styles: []string{"italic"}},
-						Chunk{content: "!"},
+					Chunks: []Chunk{
+						Chunk{Content: ""},
+						Chunk{Content: "I think ", Styles: []string{"italic"}},
+						Chunk{Content: "that's", Styles: []string{"italic", "underline"}},
+						Chunk{Content: " a ", Styles: []string{"italic"}},
+						Chunk{Content: "great", Styles: []string{"bold", "italic"}},
+						Chunk{Content: " idea", Styles: []string{"italic"}},
+						Chunk{Content: "!"},
 					},
-					typ: "dialogue",
+					Type: "dialogue",
 				},
 			},
-			typ: "dialogue",
+			Type: "dialogue",
 		},
 		Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "GIRL"},
+					Chunks: []Chunk{
+						Chunk{Content: "GIRL"},
 					},
-					typ: "speaker",
+					Type: "speaker",
 				},
 				Line{
-					chunks: []Chunk{
-						Chunk{content: "Sure it is..."},
+					Chunks: []Chunk{
+						Chunk{Content: "Sure it is..."},
 					},
-					typ: "dialogue",
+					Type: "dialogue",
 				},
 			},
 		},
@@ -184,39 +184,39 @@ Source:
 	for i, expectedParagraph := range expectedParagraphs {
 		actualParagraph := doc.Body[i]
 
-		if len(actualParagraph.lines) != len(expectedParagraph.lines) {
+		if len(actualParagraph.Lines) != len(expectedParagraph.Lines) {
 			mismatch()
 			return
 		}
 
-		for j, expectedLine := range expectedParagraph.lines {
-			actualLine := doc.Body[i].lines[j]
+		for j, expectedLine := range expectedParagraph.Lines {
+			actualLine := doc.Body[i].Lines[j]
 
-			if actualLine.typ != expectedLine.typ {
+			if actualLine.Type != expectedLine.Type {
 				mismatch()
 				return
 			}
 
-			if len(actualLine.chunks) != len(expectedLine.chunks) {
+			if len(actualLine.Chunks) != len(expectedLine.Chunks) {
 				mismatch()
 				return
 			}
 
-			for k, expectedChunk := range expectedLine.chunks {
-				actualChunk := actualLine.chunks[k]
+			for k, expectedChunk := range expectedLine.Chunks {
+				actualChunk := actualLine.Chunks[k]
 
-				if actualChunk.content != expectedChunk.content {
+				if actualChunk.Content != expectedChunk.Content {
 					mismatch()
 					return
 				}
 
-				if len(actualChunk.styles) != len(expectedChunk.styles) {
+				if len(actualChunk.Styles) != len(expectedChunk.Styles) {
 					mismatch()
 					return
 				}
 
-				for m, expectedStyle := range expectedChunk.styles {
-					actualStyle := actualChunk.styles[m]
+				for m, expectedStyle := range expectedChunk.Styles {
+					actualStyle := actualChunk.Styles[m]
 
 					if actualStyle != expectedStyle {
 						mismatch()

@@ -1,18 +1,18 @@
 package fountain
 
 type Chunk struct {
-	content string
-	styles []string
+	Content string
+	Styles []string
 }
 
 type Line struct {
-	chunks []Chunk
-	typ string
+	Chunks []Chunk
+	Type string
 }
 
 type Paragraph struct {
-	lines []Line
-	typ string
+	Lines []Line
+	Type string
 }
 
 type Document struct {

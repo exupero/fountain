@@ -118,13 +118,13 @@ func parseAction(p *Parser) state {
 
 	defer func() {
 		paragraph := Paragraph{
-			lines: []Line{
+			Lines: []Line{
 				Line{
-					chunks: chunks,
-					typ: "action",
+					Chunks: chunks,
+					Type: "action",
 				},
 			},
-			typ: "action",
+			Type: "action",
 		}
 		p.Doc.Body = append(p.Doc.Body, paragraph)
 	}()
@@ -138,7 +138,7 @@ func parseAction(p *Parser) state {
 			return parseParagraph
 		}
 		if tok.Type == TokenText {
-			chunks = append(chunks, Chunk{content: tok.Value, styles: style.list()})
+			chunks = append(chunks, Chunk{Content: tok.Value, Styles: style.list()})
 		}
 
 		if tok.Type == TokenStarDouble {
@@ -159,8 +159,8 @@ func parseDialogue(p *Parser) state {
 
 	defer func() {
 		paragraph := Paragraph{
-			lines: lines,
-			typ: "dialogue",
+			Lines: lines,
+			Type: "dialogue",
 		}
 		p.Doc.Body = append(p.Doc.Body, paragraph)
 	}()
@@ -176,19 +176,19 @@ func parseDialogue(p *Parser) state {
 
 		if tok.Type == TokenSpeaker {
 			line := Line{
-				chunks: []Chunk{
-					Chunk{content: tok.Value},
+				Chunks: []Chunk{
+					Chunk{Content: tok.Value},
 				},
-				typ: "speaker",
+				Type: "speaker",
 			}
 			lines = append(lines, line)
 		}
 		if tok.Type == TokenParenthetical {
 			line := Line{
-				chunks: []Chunk{
-					Chunk{content: tok.Value},
+				Chunks: []Chunk{
+					Chunk{Content: tok.Value},
 				},
-				typ: "parenthetical",
+				Type: "parenthetical",
 			}
 			lines = append(lines, line)
 		}
@@ -202,7 +202,7 @@ func parseDialogue(p *Parser) state {
 
 func parseDialogueText(p *Parser, tok lexer.Token) Line {
 	style := styleManager{false, false, false,}
-	chunks := []Chunk{Chunk{content: tok.Value}}
+	chunks := []Chunk{Chunk{Content: tok.Value}}
 
 	for {
 		// Check before consuming.
@@ -213,7 +213,7 @@ func parseDialogueText(p *Parser, tok lexer.Token) Line {
 
 		tok, _ = p.Next()
 		if tok.Type == TokenDialogue {
-			chunks = append(chunks, Chunk{content: tok.Value, styles: style.list()})
+			chunks = append(chunks, Chunk{Content: tok.Value, Styles: style.list()})
 		}
 
 		if tok.Type == TokenStarDouble {
@@ -228,7 +228,7 @@ func parseDialogueText(p *Parser, tok lexer.Token) Line {
 	}
 
 	return Line{
-		chunks: chunks,
-		typ: "dialogue",
+		Chunks: chunks,
+		Type: "dialogue",
 	}
 }
