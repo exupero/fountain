@@ -237,6 +237,82 @@ Or is it...`
 	})
 }
 
+func TestDocComment(t *testing.T) {
+	script := `Title: The One Day
+
+This is a [[good?]] story.
+
+BOY
+This is a great day! [[Too excited?]]`
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "This is a "},
+						Chunk{Content: "good?", Styles: []string{"comment"}},
+						Chunk{Content: " story."},
+					},
+					Type: "action",
+				},
+			},
+			Type: "action",
+		},
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "BOY"},
+					},
+					Type: "speaker",
+				},
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "This is a great day! "},
+						Chunk{Content: "Too excited?", Styles: []string{"comment"}},
+						Chunk{Content: ""},
+					},
+					Type: "dialogue",
+				},
+			},
+			Type: "dialogue",
+		},
+	})
+}
+
+func TestDocIndentation(t *testing.T) {
+	script := `Title: The One Day
+
+    Indented action.
+
+Not indented action.`
+	assertBody(t, script, []Paragraph{
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "    ", Styles: []string{"indent-4"}},
+						Chunk{Content: "Indented action."},
+					},
+					Type: "action",
+				},
+			},
+			Type: "action",
+		},
+		Paragraph{
+			Lines: []Line{
+				Line{
+					Chunks: []Chunk{
+						Chunk{Content: "Not indented action."},
+					},
+					Type: "action",
+				},
+			},
+			Type: "action",
+		},
+	})
+}
+
 func assertBody(t *testing.T, script string, expectedParagraphs []Paragraph) {
 	doc := Parse(script)
 

@@ -181,6 +181,24 @@ func lexDialogueText(lex *lexer.Lexer) lexer.StateFn {
 			lex.Emit(TokenUnderscore)
 			return lexDialogueText
 		}
+
+		if r == '[' {
+			lex.Backup()
+			lex.Emit(TokenDialogue)
+			lex.Accept("[")
+			lex.Accept("[")
+			lex.Emit(TokenCommentOpen)
+			return lexDialogueText
+		}
+
+		if r == ']' {
+			lex.Backup()
+			lex.Emit(TokenDialogue)
+			lex.Accept("]")
+			lex.Accept("]")
+			lex.Emit(TokenCommentClose)
+			return lexDialogueText
+		}
 	}
 	return nil
 }

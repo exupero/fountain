@@ -1,6 +1,8 @@
 package fountain
 
 import (
+	"fmt"
+
 	"github.com/exupero/state-lexer"
 )
 
@@ -101,7 +103,7 @@ func parseParagraph(p *Parser) state {
 }
 
 type styleManager struct {
-	bold, italic, underline bool
+	bold, italic, underline, comment bool
 }
 
 func (s *styleManager) list() []string {
@@ -109,11 +111,12 @@ func (s *styleManager) list() []string {
 	if s.bold { styles = append(styles, "bold") }
 	if s.italic { styles = append(styles, "italic") }
 	if s.underline { styles = append(styles, "underline") }
+	if s.comment { styles = append(styles, "comment") }
 	return styles
 }
 
 func parseAction(p *Parser) state {
-	style := styleManager{false, false, false}
+	style := styleManager{false, false, false, false}
 	lines := []Line{}
 	chunks := []Chunk{}
 
@@ -138,6 +141,10 @@ func parseAction(p *Parser) state {
 		if tok.Type == TokenText {
 			chunks = append(chunks, Chunk{Content: tok.Value, Styles: style.list()})
 		}
+		if tok.Type == TokenIndent {
+			s := fmt.Sprintf("indent-%d", len(tok.Value))
+			chunks = append(chunks, Chunk{Content: tok.Value, Styles: []string{s}})
+		}
 
 		if tok.Type == TokenStarDouble {
 			style.bold = !style.bold
@@ -147,6 +154,12 @@ func parseAction(p *Parser) state {
 		}
 		if tok.Type == TokenUnderscore {
 			style.underline = !style.underline
+		}
+		if tok.Type == TokenCommentOpen {
+			style.comment = true
+		}
+		if tok.Type == TokenCommentClose {
+			style.comment = false
 		}
 	}
 	return nil
@@ -191,15 +204,15 @@ func parseDialogue(p *Parser) state {
 			lines = append(lines, line)
 		}
 		if tok.Type == TokenDialogue {
-			line := parseDialogueText(p, tok)
+			line := collectDialogueText(p, tok)
 			lines = append(lines, line)
 		}
 	}
 	return nil
 }
 
-func parseDialogueText(p *Parser, tok lexer.Token) Line {
-	style := styleManager{false, false, false,}
+func collectDialogueText(p *Parser, tok lexer.Token) Line {
+	style := styleManager{false, false, false, false}
 	chunks := []Chunk{Chunk{Content: tok.Value}}
 
 	for {
@@ -222,6 +235,12 @@ func parseDialogueText(p *Parser, tok lexer.Token) Line {
 		}
 		if tok.Type == TokenUnderscore {
 			style.underline = !style.underline
+		}
+		if tok.Type == TokenCommentOpen {
+			style.comment = true
+		}
+		if tok.Type == TokenCommentClose {
+			style.comment = false
 		}
 	}
 

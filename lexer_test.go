@@ -203,16 +203,26 @@ func TestIndentation(t *testing.T) {
 func TestComment(t *testing.T) {
 	script := `Title: The One Day
 
-[[Unfinished]]
+BOY
+I have [[something]].
+
+This document is [[unfinished]]
 
 The End`
 	lexer.AssertStream(t, Tokenize, script, []lexer.Token{
 		lexer.Token{TokenDataKey, "Title"},
 		lexer.Token{TokenDataValue, "The One Day"},
 		lexer.Token{TokenParagraph, "\n"},
-		lexer.Token{TokenText, ""},
+		lexer.Token{TokenSpeaker, "BOY"},
+		lexer.Token{TokenDialogue, "I have "},
 		lexer.Token{TokenCommentOpen, "[["},
-		lexer.Token{TokenText, "Unfinished"},
+		lexer.Token{TokenDialogue, "something"},
+		lexer.Token{TokenCommentClose, "]]"},
+		lexer.Token{TokenDialogue, "."},
+		lexer.Token{TokenParagraph, "\n\n"},
+		lexer.Token{TokenText, "This document is "},
+		lexer.Token{TokenCommentOpen, "[["},
+		lexer.Token{TokenText, "unfinished"},
 		lexer.Token{TokenCommentClose, "]]"},
 		lexer.Token{TokenText, ""},
 		lexer.Token{TokenParagraph, "\n\n"},
